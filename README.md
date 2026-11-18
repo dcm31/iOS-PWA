@@ -40,6 +40,24 @@ npm run deploy
 
 Select the Cloudflare account for the deployment. The repository contains no account ID or credentials. Change `name` in `cloudflare.config.ts` if you want a different local deployment name; Workers Builds can override it when deploying a remix. Cloudflare's normal usage limits and charges apply.
 
+## GitHub deployment workflow
+
+The `dcm31/iOS-PWA` repository is connected to the existing `ios-pwa` Worker through Cloudflare Workers Builds. Changes pushed or merged to `main` run `npm run check`, then `npm run deploy`. Failed checks stop deployment. The build uses Node 24.22.1 and the repository root. Deployment credentials are stored by Cloudflare, not in this repository or GitHub Actions.
+
+Pull requests run the **Worker checks** GitHub Actions workflow without deployment credentials. Only `main` triggers the production deployment; a practice branch does not change the live application. The Cloudflare build runs its own checks before deploying, independently of the GitHub check.
+
+To practice:
+
+1. Open the `practice/worker-deployment` branch or its pull request. It contains the complete Worker application. The sample change updates the default test-message text in `src/index.html`.
+2. Review **Files changed** and wait for **Worker checks** to pass. You can edit another application file on that branch and commit it to run the checks again.
+3. When ready, mark the draft pull request ready for review and merge it into `main`.
+4. Open **Cloudflare Dashboard > Workers & Pages > ios-pwa > Builds**. Confirm the build uses the merge commit and completes successfully.
+5. Reload the [live application](https://charliemolthrop.com/ios-push-pwa-example/) and check the default test-message text. The personal-domain proxy continues using the same Worker.
+
+The Worker entry point is `src/worker.ts`; `src/index.html`, `src/app.js`, and `src/service-worker.js` are the UI and browser code. Root `index.ts` remains the original Val Town reference. Keep the Worker name and Durable Object class/binding names in `cloudflare.config.ts` unchanged when updating this deployment so it retains its existing storage. Reverting an application commit on `main` triggers another checked deployment; it does not revert stored data.
+
+For a separate fork/remix, connect its repository to its own Worker in Cloudflare and select its production branch. The GitHub checks travel with the repository; the original account's Cloudflare connection and stored credentials do not. See [Cloudflare GitHub integration](https://developers.cloudflare.com/workers/ci-cd/builds/git-integration/github-integration/) and [build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/).
+
 ## Custom paths and styling
 
 The app works at `/` and `/ios-push-pwa-example/`. The [live subpath test](https://ios-pwa.charliemolthrop.workers.dev/ios-push-pwa-example/) exercises the latter. A bare `/ios-push-pwa-example` redirects to the trailing-slash URL. The manifest ID, start URL, scope, asset URLs, local-storage key, and service-worker registration stay inside the selected path. Notification clicks return to that scope.
