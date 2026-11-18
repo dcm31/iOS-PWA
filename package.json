@@ -7,7 +7,7 @@
     "dev": "cf dev",
     "build": "cf build",
     "deploy": "cf deploy",
-    "test": "vitest run && node test/crypto-check.mjs",
+    "test": "vitest run && node test/crypto-check.mjs && node test/proxy-check.mjs",
     "check": "npm run build && tsc --noEmit && npm test"
   },
   "dependencies": {
