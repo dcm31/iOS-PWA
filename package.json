@@ -1,0 +1,30 @@
+{
+  "name": "ios-pwa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cf dev",
+    "build": "cf build",
+    "deploy": "cf deploy",
+    "test": "vitest run && node test/crypto-check.mjs",
+    "check": "npm run build && tsc --noEmit && npm test"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "2.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "2.0.0-rc.1",
+    "@cloudflare/vitest-plugin": "1.8.4",
+    "@cloudflare/workers-types": "5.20261118.1",
+    "@types/node": "24.19.2",
+    "cf": "1.0.0-rc.1",
+    "http_ece": "1.2.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  },
+  "engines": {
+    "node": "^22.23.0 || ^24.22.0 || >=26.12.0"
+  }
+}

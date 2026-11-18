@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e56638">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>iOS Push Demo</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#faf9f6;color:#242424;font:16px/1.55 system-ui,-apple-system,sans-serif}main{max-width:520px;margin:8vh auto;padding:28px}h1{font-size:38px;line-height:1.1;letter-spacing:-1.5px;margin:24px 0 16px}p{color:#62605b}.mark{display:grid;place-items:center;background:#e56638;color:#fff;width:58px;height:58px;border-radius:16px;font-size:28px}.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a14a2a;margin-top:22px}.card{background:white;border:1px solid #e7e3dc;border-radius:18px;padding:24px;margin:24px 0}ol{padding-left:23px}li{padding:4px 0}button,input{font:inherit;width:100%;border-radius:10px;padding:13px 15px}button{cursor:pointer;border:0;background:#e56638;color:#fff;font-weight:650;margin-top:12px}button:disabled{background:#e1ded8;color:#777;cursor:default}input{border:1px solid #d5d0c7;background:#fff;margin-top:8px}label{display:block;font-size:14px;font-weight:600;margin-top:24px}#status{font-size:14px;min-height:44px;margin:16px 0 0}#status[data-error=true]{color:#a82c25}.secondary{background:transparent;color:#6b6258;border:1px solid #d5d0c7;font-weight:400;font-size:14px}footer{font-size:14px;text-align:center}a{color:#8f3d20;text-underline-offset:3px}.links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}.small{font-size:12px}.hidden{display:none}@media(max-width:550px){main{margin:24px auto;padding:22px}h1{font-size:35px}}
+  </style>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<main>
+  <div class="mark" aria-hidden="true">↗</div>
+  <div class="eyebrow">A tiny web push experiment</div>
+  <h1>A website.<br>A real notification.</h1>
+  <p>Install this little app, enable notifications, and send a message to your own device.</p>
+  <div id="install">
+    <strong>On iPhone or iPad (iOS 16.4+)</strong>
+    <ol><li>Open this page in Safari.</li><li>Tap Share, then <strong>Add to Home Screen</strong>.</li><li>Open the app from its new Home Screen icon.</li></ol>
+  </div>
+  <section class="card" aria-label="Notification test">
+    <button id="enable" disabled>Enable notifications</button>
+    <label for="message">Your test message</label>
+    <input id="message" maxlength="140" value="Hello from my PWA!" autocomplete="off">
+    <button id="send" disabled>Send test notification</button>
+    <p id="status" role="status" aria-live="polite">Getting ready…</p>
+    <button id="reset" class="secondary">Reset this device</button>
+  </section>
+  <footer>
+    <div class="links"><a href="https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">View the source ↗</a><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">Deploy your own ↗</a></div>
+    <p class="small">Demo only. Messages go to your own subscription.<br>Subscriptions expire after 30 days. No account needed.</p>
+  </footer>
+</main>
+</body>
+</html>
