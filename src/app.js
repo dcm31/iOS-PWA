@@ -73,7 +73,7 @@ async function start() {
     const sub = await registration.pushManager.getSubscription();
     const subscribed = !!sub && session.subscribed && Notification.permission === 'granted';
     buttons(subscribed);
-    status(subscribed ? 'Ready. Send yourself a notification.' : 'Ready when you are. Tap Enable notifications.');
+    status(subscribed ? 'Notifications enabled. You can send a test notification.' : 'Select Enable notifications to request permission.');
   } catch (error) { status(error.message, true); }
 }
 
@@ -83,14 +83,14 @@ $('enable').addEventListener('click', async () => {
   busy = true; buttons(false);
   let subscribed = false;
   try {
-    if (await permissionPromise !== 'granted') throw new Error('Permission was not granted. Check this app in Settings → Notifications.');
+    if (await permissionPromise !== 'granted') throw new Error('Permission was not granted. Check this app in Settings under Notifications.');
     if (session.expires <= Date.now()) await prepareSession();
     let sub = await registration.pushManager.getSubscription();
     if (sub) await sub.unsubscribe();
     sub = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes(session.publicKey) });
     await api('subscribe', { subscription: sub.toJSON() });
     subscribed = true;
-    status('Notifications enabled. Send yourself a test.');
+    status('Notifications enabled. You can send a test notification.');
   } catch (error) { status(error.message, true); }
   finally { busy = false; buttons(subscribed); }
 });

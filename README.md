@@ -1,6 +1,6 @@
 # iOS PWA push notifications
 
-**[Try the live demo](https://charliemolthrop.com/ios-push-pwa-example/)** · **[Original Val Town source](./index.ts)**
+**[Live notification test](https://charliemolthrop.com/ios-push-pwa-example/)** · **[Original Val Town source](./index.ts)**
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dcm31/iOS-PWA)
 
@@ -8,19 +8,19 @@
 
 [Mobile screenshot](./docs/screenshot-mobile.jpg)
 
-A small installable web app that sends an encrypted Web Push notification to your own device. The live demo links back here; the button creates a copy in your own GitHub/Cloudflare account.
+An installable Progressive Web App that sends encrypted Web Push notifications to the subscribed device. The application links to this repository. The deployment button creates a copy in the selected GitHub and Cloudflare accounts.
 
-## Try it on your iPhone or iPad
+## iPhone and iPad installation
 
 1. Use **iOS/iPadOS 16.4 or later** and open the live demo in Safari.
-2. Tap **Share → Add to Home Screen**.
+2. Tap **Share**, then **Add to Home Screen**.
 3. Launch the app from its Home Screen icon.
 4. Tap **Enable notifications**, then allow the permission prompt.
 5. Enter a message and tap **Send test notification**. Check Notification Center and Focus settings if it is silent.
 
-Compatible desktop browsers can also try the page directly. The demo supports Apple, Google/Chrome, and Mozilla/Firefox push endpoints. A successful send means the push service accepted it, not that the device displayed it.
+Compatible desktop browsers can use the page without installation. The demo supports Apple, Google/Chrome, and Mozilla/Firefox push endpoints. A successful send means the push service accepted it, not that the device displayed it.
 
-## Deploy your own
+## Deployment
 
 Click **Deploy to Cloudflare** above, choose your repository and Worker name, and complete Cloudflare's deployment flow. Use the detected **`npm run deploy`** command. The root `cloudflare.config.ts` declares the Worker and SQLite-backed Durable Objects; `cf deploy` provisions them. No keys or storage IDs need to be copied from this demo.
 
@@ -38,7 +38,7 @@ npx cf auth login
 npm run deploy
 ```
 
-Choose your own Cloudflare account. The repository contains no account ID or credentials. Change `name` in `cloudflare.config.ts` if you want a different local deployment name; Workers Builds can override it when deploying a remix. Cloudflare's normal usage limits and charges apply.
+Select the Cloudflare account for the deployment. The repository contains no account ID or credentials. Change `name` in `cloudflare.config.ts` if you want a different local deployment name; Workers Builds can override it when deploying a remix. Cloudflare's normal usage limits and charges apply.
 
 ## Custom paths and styling
 
@@ -50,9 +50,9 @@ The standalone [workers.dev demo](https://ios-pwa.charliemolthrop.workers.dev) r
 
 The design uses Charlie’s [Fullerfont](https://github.com/dcm31/myfont) and the existing [hand-drawn speech-bubble icon](https://dcm31--207685866ff511f1a5b41607ee4eb77e.web.val.run/icon/bubble.svg) from [his site](https://charliemolthrop.com/). They are bundled locally, including PNG Home Screen icons. The page follows the site’s blue-on-white and gold-on-dark palette. These assets retain their existing ownership; this repository does not grant a new license for them.
 
-Pages include a descriptive title, description, canonical URL, Open Graph metadata, and a social preview icon. Canonical and social URLs use each deployment’s own origin and path. Screenshots show the actual deployed UI: desktop on the standalone Worker, mobile on the personal-domain route. The mobile image is browser emulation, not proof of physical iOS delivery. The personal-domain app also reached “Ready” in a local desktop browser after service-worker registration; the remote screenshot browser received a 403 for that registration, so it was not used as desktop readiness evidence.
+Pages include a descriptive title, description, canonical URL, Open Graph metadata, and a social preview icon. Canonical and social URLs use each deployment’s own origin and path. Screenshots show the actual deployed UI: desktop on the standalone Worker, mobile on the personal-domain route. The mobile image is browser emulation, not proof of physical iOS delivery. The personal-domain app also completed initialization in a local desktop browser after service-worker registration; the remote screenshot browser received a 403 for that registration, so it was not used as desktop readiness evidence.
 
-## How the Workers version works
+## Worker architecture
 
 `src/worker.ts` serves the page, manifest, icons, service worker, and API. Each installation gets a random bearer token and its own Durable Object. The object generates a new VAPID keypair using Web Crypto and keeps the private key and subscription in its own storage. `@block65/webcrypto-web-push` 2.0.0 builds the encrypted `aes128gcm` payload and VAPID authentication accepted by Apple. The service worker displays the notification.
 
@@ -60,7 +60,7 @@ The token stays in that browser's local storage and authorizes only its own subs
 
 Basic abuse controls include HTTPS push-provider allowlisting, blocked redirects, subscription key validation, same-origin POSTs, bounded request/message sizes, 30 API requests/minute and 5 new sessions/hour per IP, and a 10-second send cooldown per installation. Expired subscriptions are removed when a push service returns 404/410.
 
-This remains a **public demo, not a production notification system**. The token is a capability, not a user account; anyone who obtains it can act on that installation. There is no identity verification, endpoint-ownership challenge, distributed bot defense, or delivery guarantee. Shared-IP limits can affect unrelated visitors. In particular, visitors to the personal-domain demo share the Val proxy’s egress IP, so its 30 API requests/minute and 5 new sessions/hour limits are shared across those visitors. The standalone Worker applies them to connecting client IPs. The 10-second send cooldown remains per installation. Do not use it for sensitive messages or expose a broadcast feature without additional controls.
+This is a **public test application with security limitations**. The token is a capability, not a user account; anyone who obtains it can act on that installation. There is no identity verification, endpoint-ownership challenge, distributed bot defense, or delivery guarantee. Shared-IP limits can affect unrelated visitors. In particular, visitors to the personal-domain demo share the Val proxy’s egress IP, so its 30 API requests/minute and 5 new sessions/hour limits are shared across those visitors. The standalone Worker applies them to connecting client IPs. The 10-second send cooldown remains per installation. Do not use it for sensitive messages or expose a broadcast feature without additional controls.
 
 ## Original Val Town version
 

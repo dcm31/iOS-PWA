@@ -57,7 +57,7 @@ export class PushSession extends DurableObject<Env> {
     const { keys, subscription } = reserved.session;
     const endpoint = validateEndpoint(subscription!.endpoint);
     const payload = await buildPushPayload({
-      data: JSON.stringify({ title: 'Hello from your PWA', body: message }),
+      data: JSON.stringify({ title: 'Web Push test', body: message }),
       options: { ttl: 60, urgency: 'normal' },
     }, subscription!, { ...keys, subject });
     let response: Response;

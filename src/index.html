@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>iOS PWA Push Notifications Demo | Cloudflare Workers</title>
-  <meta name="description" content="Try real Web Push notifications on iPhone, iPad, and desktop. Install this open-source PWA, send yourself a test, or deploy your own on Cloudflare Workers.">
+  <meta name="description" content="Test Web Push notifications on iOS, iPadOS, and desktop browsers. Source code and Cloudflare Workers deployment configuration are available on GitHub.">
   <link rel="canonical" href="__CANONICAL_URL__">
   <meta property="og:type" content="website">
   <meta property="og:title" content="iOS PWA Push Notifications Demo">
-  <meta property="og:description" content="An installable web app. A real notification. Try it, view the source, or deploy your own on Cloudflare Workers.">
+  <meta property="og:description" content="An installable Progressive Web App for testing Web Push notifications, with source code and Cloudflare Workers deployment configuration.">
   <meta property="og:url" content="__CANONICAL_URL__">
   <meta property="og:image" content="__CANONICAL_URL__icon-512.png">
   <meta name="twitter:card" content="summary">
@@ -37,24 +37,24 @@
 <header class="site-brand"><a class="site-name" href="https://charliemolthrop.com/">Charlie Molthrop</a><p class="site-kicker">artist, technologist</p></header>
 <main>
   <div class="mark" aria-hidden="true"></div>
-  <p class="eyebrow">a tiny web push experiment</p>
-  <h1>A website.<br>A real notification.</h1>
-  <p class="lede">Try Web Push on iPhone, iPad, or desktop. Install this little app, enable notifications, and send a message to your own device.</p>
+  <p class="eyebrow">Progressive Web App</p>
+  <h1>Web Push notifications</h1>
+  <p class="lede">Enable notifications and send a test message to this device. Supports iOS, iPadOS, and compatible desktop browsers.</p>
   <div id="install">
     <strong>On iPhone or iPad (iOS 16.4+)</strong>
     <ol><li>Open this page in Safari.</li><li>Tap Share, then <strong>Add to Home Screen</strong>.</li><li>Open the app from its new Home Screen icon.</li></ol>
   </div>
   <section class="card" aria-label="Notification test">
     <button id="enable" disabled>Enable notifications</button>
-    <label for="message">Your test message</label>
-    <input id="message" maxlength="140" value="Hello from my PWA!" autocomplete="off">
+    <label for="message">Test message</label>
+    <input id="message" maxlength="140" value="Web Push test notification." autocomplete="off">
     <button id="send" disabled>Send test notification</button>
-    <p id="status" role="status" aria-live="polite">Getting ready…</p>
+    <p id="status" role="status" aria-live="polite">Initializing notification service...</p>
     <button id="reset" class="secondary">Reset this device</button>
   </section>
   <footer>
-    <div class="links"><a href="https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">View the source ↗</a><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">Deploy your own ↗</a></div>
-    <p class="small">Demo only. Messages go to your own subscription.<br>Subscriptions expire after 30 days. No account needed.</p>
+    <div class="links"><a href="https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">Source code</a><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/dcm31/iOS-PWA" target="_blank" rel="noopener">Deploy to Cloudflare</a></div>
+    <p class="small">Test application. Notifications are sent only to this browser’s subscription.<br>Subscriptions expire after 30 days. No sign-in required.</p>
   </footer>
 </main>
 </body>
