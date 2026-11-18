@@ -4,6 +4,10 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/dcm31/iOS-PWA)
 
+[![Screenshot of the live iOS PWA push demo, using Charlie’s handwritten blue styling](./docs/screenshot.jpg)](https://ios-pwa.charliemolthrop.workers.dev)
+
+[Mobile screenshot](./docs/screenshot-mobile.jpg)
+
 A small installable web app that sends an encrypted Web Push notification to your own device. The live demo links back here; the button creates a copy in your own GitHub/Cloudflare account.
 
 ## Try it on your iPhone or iPad
@@ -36,6 +40,16 @@ npm run deploy
 
 Choose your own Cloudflare account. The repository contains no account ID or credentials. Change `name` in `cloudflare.config.ts` if you want a different local deployment name; Workers Builds can override it when deploying a remix. Cloudflare's normal usage limits and charges apply.
 
+## Custom paths and styling
+
+The app works at `/` and `/ios-push-pwa-example/`. The [live subpath test](https://ios-pwa.charliemolthrop.workers.dev/ios-push-pwa-example/) exercises the latter. A bare `/ios-push-pwa-example` redirects to the trailing-slash URL. The manifest ID, start URL, scope, asset URLs, local-storage key, and service-worker registration stay inside the selected path. Notification clicks return to that scope.
+
+To mount it on an existing proxied Cloudflare site, add only the exact `/ios-push-pwa-example` route and `/ios-push-pwa-example/*` route for your hostname to this Worker. Inspect existing routes first. Custom-domain DNS/routing is deliberately not included in the remix configuration, so deploying a copy never claims the original site’s hostname. `charliemolthrop.com/ios-push-pwa-example` has not been connected yet: the domain uses Hover nameservers and no corresponding zone is visible through the connected personal Cloudflare account. Hosting that path needs an explicit proxy route in the existing site or a separately planned DNS/hosting change.
+
+The design uses Charlie’s [Fullerfont](https://github.com/dcm31/myfont) and the existing [hand-drawn speech-bubble icon](https://dcm31--207685866ff511f1a5b41607ee4eb77e.web.val.run/icon/bubble.svg) from [his site](https://charliemolthrop.com/). They are bundled locally, including PNG Home Screen icons. The page follows the site’s blue-on-white and gold-on-dark palette. These assets retain their existing ownership; this repository does not grant a new license for them.
+
+Pages include a descriptive title, description, canonical URL, Open Graph metadata, and a social preview icon. Canonical and social URLs use each deployment’s own origin and path. Screenshots show the actual deployed UI at desktop and mobile widths; the mobile image is browser emulation, not proof of physical iOS delivery.
+
 ## How the Workers version works
 
 `src/worker.ts` serves the page, manifest, icons, service worker, and API. Each installation gets a random bearer token and its own Durable Object. The object generates a new VAPID keypair using Web Crypto and keeps the private key and subscription in its own storage. `@block65/webcrypto-web-push` 2.0.0 builds the encrypted `aes128gcm` payload and VAPID authentication accepted by Apple. The service worker displays the notification.
@@ -60,7 +74,9 @@ The original is less hardened: it has **no authentication or rate limiting, acce
 npm run check
 ```
 
-Runs the build, TypeScript check, Workers-runtime tests, and independent payload-decryption/VAPID-signature checks. Runtime tests cover routes, origin/auth checks, oversized bodies, endpoint/key validation, separate sessions, durable state after eviction, expiry cleanup, send cooldowns, and mocked push-service responses.
+Runs the build, TypeScript check, Workers-runtime tests, and independent payload-decryption/VAPID-signature checks. Runtime tests cover root/subpath routing and SEO, origin/auth checks, oversized bodies, endpoint/key validation, separate sessions, durable state after eviction, expiry cleanup, send cooldowns, native Workers request construction, and mocked push-service responses/redirects.
+
+A live transport regression was fixed: Workers rejects `redirect: "error"` before sending a request. The sender now uses `manual` and explicitly rejects 3xx responses. A synthetic invalid Apple subscription received an HTTP 400 from Apple after the fix, confirming live provider connectivity without claiming notification delivery. The disposable test session was deleted.
 
 No end-to-end notification delivery test on a physical iPhone has been performed. Local mocked delivery and HTTP smoke checks do not establish iOS delivery. The Deploy button and its build configuration are provided; the full new-account remix/sign-in flow has not been exercised.
 

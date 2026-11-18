@@ -1,3 +1,13 @@
+const themeMedia = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  let saved;
+  try { saved = localStorage.getItem('charlie-color-theme'); } catch {}
+  const theme = saved === 'light' || saved === 'dark' ? saved : themeMedia.matches ? 'dark' : 'light';
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#101010' : '#ffffff';
+}
+applyTheme();
+themeMedia.addEventListener('change', applyTheme);
 const $ = id => document.getElementById(id);
 const status = (text, error = false) => { $('status').textContent = text; $('status').dataset.error = String(error); };
 const base = document.documentElement.dataset.base;

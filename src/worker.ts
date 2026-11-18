@@ -5,6 +5,8 @@ import html from './index.html?raw';
 import browserScript from './app.js?raw';
 import serviceWorker from './service-worker.js?raw';
 import { icons } from './icons';
+import handDrawnBubble from './assets/bubble.svg?raw';
+import font from './assets/Fullerfont-Regular.otf?inline';
 
 const TTL = 30 * 24 * 60 * 60 * 1000;
 type Session = { keys: Omit<VapidKeys, 'subject'>; expires: number; subscription?: PushSubscription; lastSend?: number };
@@ -113,10 +115,10 @@ export class RequestLimit extends DurableObject<Env> {
 
 const manifest = (base: string) => ({
   id: base, name: 'iOS Push Demo', short_name: 'Push Demo', start_url: base, scope: base,
-  display: 'standalone', background_color: '#faf9f6', theme_color: '#e56638',
+  display: 'standalone', background_color: '#ffffff', theme_color: '#ffffff',
   icons: [192, 512].map(size => ({ src: `${base}icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png', purpose: 'any' })),
 });
-const icon = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#e56638"/><path d="M145 332h222l-26-38v-79a85 85 0 0 0-170 0v79z" fill="white"/><circle cx="256" cy="366" r="26" fill="white"/></svg>';
+const icon = handDrawnBubble.replace('<svg ', '<svg style="color:#2049c7" ');
 
 async function route(request: Request, env: Env) {
   const url = new URL(request.url);
@@ -131,6 +133,7 @@ async function route(request: Request, env: Env) {
   if (request.method === 'GET') {
     if (Object.hasOwn(icons, path)) return new Response(Uint8Array.from(atob(icons[path]), c => c.charCodeAt(0)), { headers: { 'Content-Type': 'image/png' } });
     if (path === '/') return new Response(html.replaceAll('__APP_BASE__', base).replaceAll('__CANONICAL_URL__', canonical), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    if (path === '/Fullerfont-Regular.otf') return new Response(Uint8Array.from(atob(font.split(',')[1]), c => c.charCodeAt(0)), { headers: { 'Content-Type': 'font/otf' } });
     if (path === '/app.js') return new Response(browserScript, { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });
     if (path === '/service-worker.js') return new Response(serviceWorker, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Service-Worker-Allowed': base } });
     if (path === '/manifest.json') return Response.json(manifest(base), { headers: { 'Content-Type': 'application/manifest+json' } });
