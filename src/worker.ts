@@ -60,12 +60,17 @@ export class PushSession extends DurableObject<Env> {
     }, subscription!, { ...keys, subject });
     let response: Response;
     try {
-      response = await fetch(endpoint, { ...payload, redirect: 'error', signal: AbortSignal.timeout(10_000) });
-    } catch {
-      return { status: 502, error: 'Could not reach the push service. Please try again.' };
+      response = await fetch(endpoint, { ...payload, redirect: 'manual', signal: AbortSignal.timeout(10_000) });
+    } catch (error) {
+      const failure = error instanceof Error ? error : new Error('Unknown transport error');
+      // Do not log URLs, tokens, request headers, keys, or message contents.
+      const detail = failure.message.replace(/https?:\/\/[^\s]+/g, '[URL]').replace(/[A-Za-z0-9_+\/=-]{32,}/g, '[redacted]').slice(0,240);
+      console.error(JSON.stringify({ event: 'push_transport_failed', provider: new URL(endpoint).hostname, name: failure.name, detail }));
+      return { status: 502, error: 'Could not reach the push service. Please try again.', code: failure.name === 'TimeoutError' ? 'push_timeout' : 'push_transport_failed' };
     }
     // Never return/log the provider body: it can contain endpoint identifiers.
     await response.body?.cancel();
+    if (response.status >= 300 && response.status < 400) return { status: 502, error: 'Push service returned a redirect, which was blocked.', code: 'push_redirect_blocked' };
     if (response.status === 404 || response.status === 410) {
       await this.ctx.storage.transaction(async txn => {
         const current = await txn.get<Session>('session');
@@ -106,22 +111,29 @@ export class RequestLimit extends DurableObject<Env> {
   async alarm() { await this.ctx.storage.deleteAll(); }
 }
 
-const manifest = {
-  id: '/', name: 'iOS Push Demo', short_name: 'Push Demo', start_url: '/', scope: '/',
+const manifest = (base: string) => ({
+  id: base, name: 'iOS Push Demo', short_name: 'Push Demo', start_url: base, scope: base,
   display: 'standalone', background_color: '#faf9f6', theme_color: '#e56638',
-  icons: [192, 512].map(size => ({ src: `/icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png', purpose: 'any' })),
-};
+  icons: [192, 512].map(size => ({ src: `${base}icon-${size}.png`, sizes: `${size}x${size}`, type: 'image/png', purpose: 'any' })),
+});
 const icon = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#e56638"/><path d="M145 332h222l-26-38v-79a85 85 0 0 0-170 0v79z" fill="white"/><circle cx="256" cy="366" r="26" fill="white"/></svg>';
 
 async function route(request: Request, env: Env) {
   const url = new URL(request.url);
-  const path = url.pathname;
+  const prefix = '/ios-push-pwa-example';
+  if (url.pathname === prefix && (request.method === 'GET' || request.method === 'HEAD')) {
+    url.pathname += '/';
+    return Response.redirect(url.href, 308);
+  }
+  const base = url.pathname.startsWith(prefix + '/') ? prefix + '/' : '/';
+  const path = '/' + url.pathname.slice(base.length);
+  const canonical = new URL(base, url.origin).href.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
   if (request.method === 'GET') {
     if (Object.hasOwn(icons, path)) return new Response(Uint8Array.from(atob(icons[path]), c => c.charCodeAt(0)), { headers: { 'Content-Type': 'image/png' } });
-    if (path === '/') return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    if (path === '/') return new Response(html.replaceAll('__APP_BASE__', base).replaceAll('__CANONICAL_URL__', canonical), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     if (path === '/app.js') return new Response(browserScript, { headers: { 'Content-Type': 'text/javascript; charset=utf-8' } });
-    if (path === '/service-worker.js') return new Response(serviceWorker, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Service-Worker-Allowed': '/' } });
-    if (path === '/manifest.json') return Response.json(manifest, { headers: { 'Content-Type': 'application/manifest+json' } });
+    if (path === '/service-worker.js') return new Response(serviceWorker, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Service-Worker-Allowed': base } });
+    if (path === '/manifest.json') return Response.json(manifest(base), { headers: { 'Content-Type': 'application/manifest+json' } });
     if (path === '/icon.svg') return new Response(icon, { headers: { 'Content-Type': 'image/svg+xml' } });
     if (path === '/health') return Response.json({ ok: true });
   }

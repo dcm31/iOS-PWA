@@ -1,6 +1,7 @@
 const $ = id => document.getElementById(id);
 const status = (text, error = false) => { $('status').textContent = text; $('status').dataset.error = String(error); };
-const storageKey = 'ios-pwa-session-v1';
+const base = document.documentElement.dataset.base;
+const storageKey = 'ios-pwa-session-v1' + (base === '/' ? '' : ':' + base);
 let token = localStorage.getItem(storageKey);
 let session;
 let registration;
@@ -13,7 +14,7 @@ function bytes(value) {
 }
 
 async function api(path, body = {}) {
-  const response = await fetch('/api/' + path, {
+  const response = await fetch(base + 'api/' + path, {
     method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
     body: JSON.stringify(body),
   });
@@ -48,8 +49,16 @@ async function start() {
     status('Web Push is not supported in this browser.', true); return;
   }
   try {
-    await navigator.serviceWorker.register('/service-worker.js');
-    registration = await navigator.serviceWorker.ready;
+    registration = await navigator.serviceWorker.register(base + 'service-worker.js', { scope: base });
+    const worker = registration.installing || registration.waiting || registration.active;
+    if (worker && worker.state !== 'activated') await new Promise((resolve, reject) => {
+      const changed = () => {
+        if (worker.state === 'activated') { worker.removeEventListener('statechange', changed); resolve(); }
+        if (worker.state === 'redundant') { worker.removeEventListener('statechange', changed); reject(new Error('Could not activate the notification service worker. Reload to try again.')); }
+      };
+      worker.addEventListener('statechange', changed);
+      changed();
+    });
     await prepareSession();
     const sub = await registration.pushManager.getSubscription();
     const subscribed = !!sub && session.subscribed && Notification.permission === 'granted';

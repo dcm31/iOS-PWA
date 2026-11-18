@@ -1,25 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-base="__APP_BASE__">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#e56638">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>iOS Push Demo</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="/icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <title>iOS PWA Push Notifications Demo | Cloudflare Workers</title>
+  <meta name="description" content="Try real Web Push notifications on iPhone, iPad, and desktop. Install this open-source PWA, send yourself a test, or deploy your own on Cloudflare Workers.">
+  <link rel="canonical" href="__CANONICAL_URL__">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="iOS PWA Push Notifications Demo">
+  <meta property="og:description" content="An installable web app. A real notification. Try it, view the source, or deploy your own on Cloudflare Workers.">
+  <meta property="og:url" content="__CANONICAL_URL__">
+  <meta property="og:image" content="__CANONICAL_URL__icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="apple-mobile-web-app-title" content="Push Demo">
+  <link rel="manifest" href="__APP_BASE__manifest.json">
+  <link rel="icon" href="__APP_BASE__icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="__APP_BASE__icon-192.png">
   <style>
     *{box-sizing:border-box}body{margin:0;background:#faf9f6;color:#242424;font:16px/1.55 system-ui,-apple-system,sans-serif}main{max-width:520px;margin:8vh auto;padding:28px}h1{font-size:38px;line-height:1.1;letter-spacing:-1.5px;margin:24px 0 16px}p{color:#62605b}.mark{display:grid;place-items:center;background:#e56638;color:#fff;width:58px;height:58px;border-radius:16px;font-size:28px}.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#a14a2a;margin-top:22px}.card{background:white;border:1px solid #e7e3dc;border-radius:18px;padding:24px;margin:24px 0}ol{padding-left:23px}li{padding:4px 0}button,input{font:inherit;width:100%;border-radius:10px;padding:13px 15px}button{cursor:pointer;border:0;background:#e56638;color:#fff;font-weight:650;margin-top:12px}button:disabled{background:#e1ded8;color:#777;cursor:default}input{border:1px solid #d5d0c7;background:#fff;margin-top:8px}label{display:block;font-size:14px;font-weight:600;margin-top:24px}#status{font-size:14px;min-height:44px;margin:16px 0 0}#status[data-error=true]{color:#a82c25}.secondary{background:transparent;color:#6b6258;border:1px solid #d5d0c7;font-weight:400;font-size:14px}footer{font-size:14px;text-align:center}a{color:#8f3d20;text-underline-offset:3px}.links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}.small{font-size:12px}.hidden{display:none}@media(max-width:550px){main{margin:24px auto;padding:22px}h1{font-size:35px}}
   </style>
-  <script src="/app.js" defer></script>
+  <script src="__APP_BASE__app.js" defer></script>
 </head>
 <body>
 <main>
   <div class="mark" aria-hidden="true">↗</div>
   <div class="eyebrow">A tiny web push experiment</div>
   <h1>A website.<br>A real notification.</h1>
-  <p>Install this little app, enable notifications, and send a message to your own device.</p>
+  <p>Try Web Push on iPhone, iPad, or desktop. Install this little app, enable notifications, and send a message to your own device.</p>
   <div id="install">
     <strong>On iPhone or iPad (iOS 16.4+)</strong>
     <ol><li>Open this page in Safari.</li><li>Tap Share, then <strong>Add to Home Screen</strong>.</li><li>Open the app from its new Home Screen icon.</li></ol>

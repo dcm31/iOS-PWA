@@ -75,12 +75,13 @@ it('sends an encrypted VAPID request and rejects concurrent duplicate sends', as
   const { token } = await create();
   expect((await post('subscribe', { subscription: await subscription() }, token)).status).toBe(200);
   const outgoing = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
-    expect(String(input)).toBe('https://web.push.apple.com/test');
+    const nativeRequest = new Request(input, init);
+    expect(nativeRequest.url).toBe('https://web.push.apple.com/test');
     const headers = new Headers(init?.headers);
     expect(headers.get('authorization')).toMatch(/^vapid t=.+, k=/);
     expect(headers.get('content-encoding')).toBe('aes128gcm');
     expect(new Uint8Array(init!.body as ArrayBuffer).byteLength).toBe(4096);
-    expect(init?.redirect).toBe('error');
+    expect(nativeRequest.redirect).toBe('manual');
     return new Response(null, { status: 201 });
   });
   const responses = await Promise.all([post('send', { message: 'hello' }, token), post('send', { message: 'hello' }, token)]);
@@ -102,4 +103,53 @@ it('limits session creation per IP', async () => {
   for (let n = 0; n < 5; n++) expect((await post('session')).status).toBe(201);
   expect((await post('session')).status).toBe(429);
   expect((await post('session', {}, undefined, '192.0.2.2')).status).toBe(201);
+});
+
+
+it('keeps the subpath PWA, assets, API, and SEO inside its own scope', async () => {
+  const base = '/ios-push-pwa-example/';
+  const redirect = await exports.default.fetch(origin + base.slice(0, -1), { redirect: 'manual' });
+  expect(redirect.status).toBe(308);
+  expect(redirect.headers.get('location')).toBe(origin + base);
+  const html = await (await exports.default.fetch(origin + base)).text();
+  expect(html).toContain('data-base="' + base + '"');
+  expect(html).toContain('href="' + base + 'manifest.json"');
+  expect(html).toContain('src="' + base + 'app.js"');
+  expect(html).toContain('rel="canonical" href="' + origin + base + '"');
+  expect(html).toContain('name="description"');
+  expect(html).toContain('property="og:image" content="' + origin + base + 'icon-512.png"');
+  expect(html).not.toContain('__APP_BASE__');
+  const manifest = await (await exports.default.fetch(origin + base + 'manifest.json')).json();
+  expect(manifest.scope).toBe(base);
+  expect(manifest.start_url).toBe(base);
+  expect(manifest.id).toBe(base);
+  expect(manifest.icons[0].src).toBe(base + 'icon-192.png');
+  const sw = await exports.default.fetch(origin + base + 'service-worker.js');
+  expect(sw.headers.get('service-worker-allowed')).toBe(base);
+  expect(await sw.text()).toContain('self.registration.scope');
+  for (const asset of ['app.js', 'icon-192.png', 'icon-512.png', 'icon.svg', 'health']) {
+    expect((await exports.default.fetch(origin + base + asset)).status).toBe(200);
+  }
+  expect((await exports.default.fetch(origin + '/ios-push-pwa-example-other/')).status).toBe(404);
+  const response = await exports.default.fetch(origin + base + 'api/session', {
+    method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json' }, body: '{}',
+  });
+  expect(response.status).toBe(201);
+  const info = await response.json();
+  expect(info.publicKey).toBeTruthy();
+  expect(info.privateKey).toBeUndefined();
+});
+
+
+it('blocks push redirects without following them or forwarding credentials', async () => {
+  const { token } = await create();
+  await post('subscribe', { subscription: await subscription() }, token);
+  const outgoing = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+    expect(new Request(input, init).redirect).toBe('manual');
+    return new Response(null, { status: 302, headers: { Location: 'https://example.com/collect' } });
+  });
+  const response = await post('send', { message: 'hello' }, token);
+  expect(response.status).toBe(502);
+  expect((await response.json()).code).toBe('push_redirect_blocked');
+  expect(outgoing).toHaveBeenCalledTimes(1);
 });
